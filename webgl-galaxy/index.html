@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+    <title>WebGL Galaxy</title>
+    <meta charset="utf-8">
+<meta name="description" content="WebGL galaxy with shaders" />
+    
+    
+    
+        <link rel="stylesheet" href="css/style.css">
+
+    
+    
+    
+  </head>
+
+  <body>
+
+    <!--
+GALAXY SHADER
+_______________________
+USER NOTE : 
+
+- licence : you can do what you want with this shader
+- notice : 
+   - Shaders let us avoid using textures. Here gas simulation fills the pixels and so reduces a lot the amount of required particles. Here 10,000 are rendered : that enables realtime rendering of many galaxies, even on smartphone (see the other pen 'Hubble Deep Field' with 1,200,000 particles smooth on mobile).
+   - The shader code used includes stuff from the little buster game. The pure galaxy shader is the commented one from line 15.
+   - It is written for the galaxy's size chosen in the JS, which is over ~90 GL units. Using an other size will get a weird result. I may write the stuff to avoid that soon but if needed you can scale the pointcloud.
+-->
+<!-- galaxy shader without stuff from the game-->
+<!--
+<script id='vShader' type='x-vertex/x-shader'>
+			  uniform float size;
+  uniform float pixelRatio;
+  
+  varying vec3 vPosition;
+  varying float gas;
+  
+  void main(){
+    vPosition=position;
+    
+    vec4 mvPosition=modelViewMatrix*vec4(position,1.);
+    gl_Position=mvPosition*projectionMatrix;
+    
+    float a=length(position);
+    gas=max(.0,sin(-a/20.));
+    gl_PointSize=pixelRatio*size*(1.+gas*2.)/length(mvPosition.xyz);
+  }
+		</script>
+		<script id='fShader' type='x-fragment/x-shader'>
+  varying vec3 vPosition;
+  varying float gas;
+      
+  void main(){
+    float a=max(.32,.0065*length(vPosition));
+      
+    float b=distance(gl_PointCoord,vec2(.5));
+    float gaslook=-(b-.5)*1.2*gas; 
+    float starlook=(1.-gas)/(b*10.);
+    float result=gaslook+starlook;
+               
+    gl_FragColor=vec4(.32,.28,a,1.)*result;
+  }
+		</script>-->
+<script id='vShader' type='x-vertex/x-shader'>
+			  uniform float size;
+  uniform float t;
+  uniform float z;
+  uniform float pixelRatio;
+  
+  varying vec3 vPosition;
+  varying vec3 mPosition;//modified position
+  varying float gas;
+  
+  float a,b=0.;
+  
+  void main(){
+  
+    vPosition=position;
+    
+    a=length(position);
+    if(t>0.)b=max(0.,(cos(a/20.-t*.02)-.99)*3./a);
+    if(z>0.)b=max(0.,cos(a/40.-z*.01+2.));
+    mPosition=position*(1.+b*4.);
+    vec4 mvPosition=modelViewMatrix*vec4(mPosition,1.);
+    gl_Position=mvPosition*projectionMatrix;
+    
+    gas=max(.0,sin(-a/20.));
+    gl_PointSize=pixelRatio*size*(1.+gas*2.)/length(mvPosition.xyz);
+  
+  }
+		</script>
+		<script id='fShader' type='x-fragment/x-shader'>
+  uniform float z;
+      
+  varying vec3 vPosition;
+  varying vec3 mPosition;
+  varying float gas;
+      
+  void main(){
+    
+    float a=distance(mPosition,vPosition);
+    if(a>0.)a=1.;
+    
+    float b=max(.32,.0065*length(vPosition));
+      
+    float c=distance(gl_PointCoord,vec2(.5));
+    float starlook=-(c-.5)*1.2*gas; 
+    float gaslook=(1.-gas)/(c*10.);
+    float texture=starlook+gaslook;
+               
+    gl_FragColor=vec4(.32,.28,b,1.)*texture*(1.-a*.35);
+    if(z>0.)gl_FragColor*=cos(1.57*z/322.)*(1.-.001*length(mPosition));
+      
+  }
+		</script>
+      
+<div class=layout>
+  <div id=info>
+    <p class=shadow>Milkyways Industries proudly presents</p>
+    <p class=shadow>the Dark EnErgy Pulse Buster</p>
+    <span class='black one'></span>
+    <span class='black two'></span>
+    <span class='black three'></span>
+    <span class='black four'></span>
+    <span class='black one right'></span>
+    <span class='black two right'></span>
+    <span class='black three right'></span>
+    <span class='black four right'></span>
+    <p class=positionning>
+      <span id=timeline></span>
+    </p>
+    <div id=log></div>
+    <span class=eye></span>
+    <span class=metal id=abort></span>
+  </div>
+  <div id=instruction>Welcome ! Now we have conquered all the universe, we prefer shooting at galaxies rather than golf balls. There are billions anyway. Click to scan it first.</div>
+</div>
+<div id=good-person>I shouldn't. It is not the Jedi way.</div>
+<div id=howmuch>
+  <p class=counter-title id=saved>galaxies saved<p class=counter id=savedresult>0</p></p>
+  <p id=good>HERO</p>
+  <div id=bg></div>
+  <p id=bad>VILAIN</p>
+  <p class=counter-title id=destroyed>galaxies destroyed<p class=counter id=destroyedresult>0</p></p>
+  <span id=gauge></span>
+</div>
+<a class=twitter href="https://twitter.com/GPUaccelerated" target='_blank'>Share your result on twitter</a>
+<a class=more href="http://codepen.io/collection/nVYEGg/" style='position:absolute; bottom:10px;right:10px;font-family:Arial;color:#33c;margin-right:-500px;transition:margin-right 500ms ease;' target='_blank'>More webgl galaxies</a>
+<button  style='position:absolute;width:100%;text-align:center;border-radius:5px;right:10px;font-family:Arial;color:#33c;outline:none;background:none;border:none;text-decoration:underline;font-size:16px;cursor:pointer;'>Had a bad day ?<br/>Destroy this galaxy to undwind</button>
+<!-- webglstats.com-->
+<script src="//cdn.webglstats.com/stat.js" defer="defer" async="async"></script>
+    <script src='http://threejs.org/build/three.js'></script>
+<script src='http://cdnjs.cloudflare.com/ajax/libs/gsap/1.17.0/TweenLite.min.js'></script>
+<script src='http://threejs.org/examples/js/controls/TrackballControls.js'></script>
+
+        <script src="js/index.js"></script>
+
+    
+    
+    
+  </body>
+</html>

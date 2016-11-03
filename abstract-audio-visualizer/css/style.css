@@ -1,0 +1,60 @@
+@import url(http://fonts.googleapis.com/css?family=Carrois+Gothic);
+
+*, *:after, *:before {
+  
+	box-sizing: border-box; 
+  
+}
+
+html {
+
+	width: 100%;
+	height: 100%;
+		
+	overflow: hidden;
+
+}
+
+.play {
+	
+	font-family: 'Carrois Gothic', sans-serif;
+	font-size: 1.4em;
+		
+	text-align: center;	
+	text-transform: uppercase;
+	
+}
+
+.play {
+	
+	color: #ffffff;
+
+	position: absolute;
+	
+	width: 80px;
+	height: 30px;
+	
+	top: 90%;
+	left: 50%;
+	
+	margin: -15px 0 0 -45px;
+	
+	border: medium solid rgba(255, 255, 255, 0.3);
+	
+	z-index: 2;
+		
+	-webkit-transition: border 1s;
+	   -moz-transition: border 1s;
+	    -ms-transition: border 1s;
+	     -o-transition: border 1s;
+	        transition: border 1s;
+	
+}
+
+.play:hover {
+	
+	border: medium solid rgba(255, 255, 255, 1.0);
+  
+  cursor: pointer;
+				
+}

@@ -1,0 +1,23 @@
+* {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+#footer {
+  color: #3b434c ;
+  font-family: 'Lato';
+  font-size: 14px;
+  padding: 10px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+#footer a {
+  color: black;
+  font-family: 'Lato';
+  font-style: italic;
+  text-decoration: none;
+  font-weight: 700;
+}

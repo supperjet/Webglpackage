@@ -1,0 +1,379 @@
+
+class window.App 
+
+    canvasGL    : null
+
+    container   : null
+
+    scene       : null
+
+    camera      : null
+
+    renderer    : null
+
+    geometry    : null
+
+    material    : null
+
+    mesh        : null
+
+    gui         : null
+
+    terrain     : null
+
+    composer    : null
+
+    render_pass : null
+
+    fxaa_pass   : null
+
+    posteffect  : false
+
+    meteo       : null
+
+    skybox      : null
+
+
+    constructor: ->
+
+        fb = document.getElementById('facebook');
+        twt = document.getElementById('twitter');
+        lin = document.getElementById('linkedin');
+        plus = document.getElementById('plus');
+
+        fb.addEventListener('click', ()=>
+
+            window.open("https://www.facebook.com/Pierre.de.miel", '_blank');
+
+        , false)
+
+        twt.addEventListener('click', ()=>
+
+            window.open("https://twitter.com/Samsyyyy", '_blank');
+
+        , false)
+
+        lin.addEventListener('click', ()=>
+
+            window.open("https://www.linkedin.com/profile/view?id=182449324&trk=nav_responsive_tab_profile", '_blank');
+
+        , false)
+
+
+        plus.addEventListener('click', ()=>
+
+            window.open("http://experiments.crma.ninja/repos/samuel-honigstein/", '_blank');
+
+        , false)
+
+
+    init: =>
+
+
+        @scene = new THREE.Scene();
+
+        @camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 100000 );
+
+        console.log @camera
+
+        @camera.position.z =  7;
+
+        @camera.position.y =  1;
+
+        @renderer = new THREE.WebGLRenderer( { width:  window.innerWidth, height:  window.innerHeight, scale:1, antialias: false });
+
+        @renderer.setSize(window.innerWidth, window.innerHeight);
+
+        @container = document.createElement( 'div' );
+
+        @container.id = 'canvasGL';
+
+        @container.appendChild( @renderer.domElement );
+
+        @camera.lookAt(new THREE.Vector3());
+
+        document.getElementById('experience').appendChild( @container );
+
+        @terrain = new Terrain(@scene)
+
+        @scene.add(@terrain.plane_mesh)
+
+        @update()
+
+    update: =>
+
+        requestAnimationFrame(@update)
+
+        @terrain.update()
+
+        @renderScene()
+
+
+
+    renderScene :=>
+
+        @renderer.render( @scene, @camera );
+
+
+    resize:(stageWidth, stageHeight) =>
+
+        
+
+        @camera.aspect = stageWidth / stageHeight;
+
+        @camera.updateProjectionMatrix();
+
+        @renderer.setSize( stageWidth, stageHeight );
+
+
+
+
+class window.Terrain
+
+    uniforms                : null
+
+    plane_mesh              : null
+
+    plane_geometry          : null
+
+    groundMaterial          : null
+
+    clock                   :  new THREE.Clock(true)
+
+    options : {
+
+            elevation : 1,
+
+            noise_range  : 2.14,
+
+            sombrero_amplitude : 0.6,
+
+            sombrero_frequency : 10.0,
+
+            speed            : 0.8,
+
+            segments         : 324,
+
+            wireframe_color     : '#e25cfe',
+
+            perlin_passes    : 1,
+
+            wireframe        : true,
+
+            floor_visible    : true
+
+        }
+
+    scene : null
+
+    constructor:(scene)->
+
+        @scene = scene
+
+        @init()
+
+    init :=>
+
+
+
+        @uniforms =
+          time:
+            type: "f"
+            value: 0.0
+
+          speed:
+            type: "f"
+            value: @options.speed
+
+          elevation:
+            type: "f"
+            value: @options.elevation
+
+          noise_range:
+            type: "f"
+            value: @options.noise_range
+
+          offset:
+            type: "f"
+            value: @options.elevation
+
+          perlin_passes:
+            type: "f"
+            value: @options.perlin_passes
+
+          sombrero_amplitude:
+            type: "f"
+            value: @options.sombrero_amplitude
+
+          sombrero_frequency:
+            type: "f"
+            value: @options.sombrero_frequency
+
+          line_color:
+            type: "c"
+            value: new THREE.Color(@options.wireframe_color)
+
+
+
+
+
+
+        @buildPlanes(@options.segments)
+
+       
+
+        @initGUI()
+
+
+    initGUI:() =>
+
+        @gui = new dat.GUI();
+
+        @gui.values = {}
+
+        @gui.values.speed            = @gui.add(@options,'speed',-5,5).step(0.01);
+
+        @gui.values.segments         = @gui.add(@options,'segments',20,800).step(1);
+
+        @gui.values.perlin_passes     = @gui.add(@options,'perlin_passes',1,3).step(1);
+
+        @gui.values.elevation = @gui.add(@options,'elevation',-10,10).step(0.01);
+
+        @gui.values.noise_range  = @gui.add(@options,'noise_range',-10,10).step(0.01);
+
+        @gui.values.sombrero_amplitude     = @gui.add(@options,'sombrero_amplitude',-5,5).step(0.1);
+
+        @gui.values.sombrero_frequency     = @gui.add(@options,'sombrero_frequency',0,100).step(0.1);
+
+        @gui.values.wireframe_color     = @gui.addColor(@options,'wireframe_color');
+
+  
+
+        @gui.values.wireframe = @gui.add(@options, 'wireframe');
+
+        @gui.values.floor_visible = @gui.add(@options, 'floor_visible');
+
+
+
+        @gui.values.elevation.onChange (value) =>
+
+            @uniforms.elevation.value = value
+
+            return
+
+
+        @gui.values.wireframe.onChange (value) =>
+
+            @plane_material.wireframe = value
+
+            return
+
+        @gui.values.floor_visible.onChange (value) =>
+
+            @groundMaterial.visible = value
+
+            return
+
+
+
+        @gui.values.noise_range.onChange (value) =>
+
+            @uniforms.noise_range.value = value
+
+            return
+
+        @gui.values.speed.onChange (value) =>
+
+            @uniforms.speed.value = value
+
+            return
+
+        @gui.values.perlin_passes.onChange (value) =>
+
+            @uniforms.perlin_passes.value = value
+
+            return
+
+        @gui.values.sombrero_amplitude.onChange (value) =>
+
+            @uniforms.sombrero_amplitude.value = value
+
+            return
+
+        @gui.values.sombrero_frequency.onChange (value) =>
+
+            @uniforms.sombrero_frequency.value = value
+
+            return
+
+
+
+        @gui.values.wireframe_color.onChange (value) =>
+            console.log('value')
+            @uniforms.line_color.value = new THREE.Color(value);
+            return
+
+        @gui.values.segments.onFinishChange (value) =>
+
+            @scene.remove(@plane_mesh)
+
+            @buildPlanes(value)
+
+            @scene.add(@plane_mesh)
+            return
+
+    buildPlanes:(segments)=>
+
+
+
+        @plane_geometry = new THREE.PlaneBufferGeometry(20,20,segments,segments);
+
+        @plane_material = new THREE.ShaderMaterial({
+
+            vertexShader       : document.getElementById('shader-vertex-terrain-perlinsombrero').textContent,
+
+            fragmentShader     : document.getElementById('shader-fragment-terrain').textContent,
+
+            wireframe          : @options.wireframe,
+
+            wireframeLinewidth : 1,
+
+            transparent        : true,
+
+            uniforms           : @uniforms
+
+        });
+
+
+
+        @groundMaterial = new THREE.MeshPhongMaterial( { ambient: 0xffffff, color: 0xffffff, specular: 0x050505 } )
+
+        @groundMaterial.color.setHSL( 0.095, 1, 0.75 );
+
+        
+
+        @materials = [
+
+                    @groundMaterial,
+
+                    @plane_material
+        ]
+
+        @plane_mesh = THREE.SceneUtils.createMultiMaterialObject( @plane_geometry, @materials );
+
+        @plane_mesh.rotation.x = - Math.PI / 2;
+
+        @plane_mesh.position.y = -0.5;
+
+
+    update: =>
+
+        @.plane_material.uniforms['time'].value = @clock.getElapsedTime();
+
+
+
+
+
+
+App = new window.App();
+App.init();

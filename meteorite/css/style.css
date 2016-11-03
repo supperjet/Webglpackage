@@ -1,0 +1,38 @@
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:800);
+
+#instructions{
+  position:absolute;
+  width:100%;
+  top:50%;
+  margin: auto;
+  margin-top:100px;
+  font-family:'Open Sans', sans-serif;
+  color:#fff;
+  font-size:1.2em;
+  text-transform: uppercase;
+  text-align : center;
+}
+
+#world{
+  background-color:#8cdfd4;
+}
+
+body{
+  background-color:#fff;
+  overflow:hidden;
+}
+#credits{
+  position:absolute;
+  width:100%;
+  margin: auto;
+  bottom:0;
+  margin-bottom:20px;
+  font-family:'Open Sans', sans-serif;
+  color:#56ac9f;
+  font-size:0.7em;
+  text-transform: uppercase;
+  text-align : center;
+}
+#credits a {
+  color:#56ac9f;
+}

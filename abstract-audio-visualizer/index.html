@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+    <title>Abstract Audio Visualizer</title>
+    
+    
+    
+    
+        <style>
+      /* NOTE: The styles were added inline because Prefixfree needs access to your styles and they must be inlined if they are on local disk! */
+      @import url(http://fonts.googleapis.com/css?family=Carrois+Gothic);
+
+*, *:after, *:before {
+  
+	box-sizing: border-box; 
+  
+}
+
+html {
+
+	width: 100%;
+	height: 100%;
+		
+	overflow: hidden;
+
+}
+
+.play {
+	
+	font-family: 'Carrois Gothic', sans-serif;
+	font-size: 1.4em;
+		
+	text-align: center;	
+	text-transform: uppercase;
+	
+}
+
+.play {
+	
+	color: #ffffff;
+
+	position: absolute;
+	
+	width: 80px;
+	height: 30px;
+	
+	top: 90%;
+	left: 50%;
+	
+	margin: -15px 0 0 -45px;
+	
+	border: medium solid rgba(255, 255, 255, 0.3);
+	
+	z-index: 2;
+		
+	-webkit-transition: border 1s;
+	   -moz-transition: border 1s;
+	    -ms-transition: border 1s;
+	     -o-transition: border 1s;
+	        transition: border 1s;
+	
+}
+
+.play:hover {
+	
+	border: medium solid rgba(255, 255, 255, 1.0);
+  
+  cursor: pointer;
+				
+}
+    </style>
+
+    
+        <script src="js/prefixfree.min.js"></script>
+
+    
+  </head>
+
+  <body>
+
+    <!-- Particles -->
+<script type = "x-shader/x-vertex" id = "vertex">
+			
+		attribute float size;
+		uniform float bass;
+					
+		void main() {
+							
+			  vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+			
+				gl_PointSize = size * bass * (100.0 / length(mvPosition.xyz));
+			
+				gl_Position = projectionMatrix * mvPosition;
+		
+		}
+		
+</script>
+		
+<script type = "x-shader/x-fragment" id = "fragment">
+		
+		uniform vec3 color;
+		uniform sampler2D texture;
+		uniform float opacity;
+		
+		void main() {
+		
+				vec4 outColor = texture2D(texture, gl_PointCoord);
+		
+				gl_FragColor = outColor * vec4(color, opacity);
+						
+		}
+		
+</script>
+
+<body>
+		
+		<div class = "play">Play</div>
+	
+</body>
+    <script src='http://cdnjs.cloudflare.com/ajax/libs/three.js/r68/three.min.js'></script>
+<script src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/16395/tween.min.js'></script>
+<script src='http://cdnjs.cloudflare.com/ajax/libs/stats.js/r11/Stats.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min.js'></script>
+<script src='http://js.leapmotion.com/0.2.1/leap.min.js'></script>
+
+        <script src="js/index.js"></script>
+
+    
+    
+    
+  </body>
+</html>
